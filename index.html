@@ -1777,7 +1777,7 @@ function bindEvents(){
  $("#profileBtn")?.addEventListener("click",openProfile);
  $("#playBtn").onclick=()=>{if(!state.currentId){if(state.tracks[0])playTrack(state.tracks[0].id);return}if(audio.paused){playbackWanted=true;playbackRecoveryUntil=Date.now()+5000;audio.play().catch(()=>{})}else{playbackWanted=false;audio.pause()}};
  $("#prevBtn").onclick=(e)=>{e.preventDefault();e.stopPropagation();prev()}; $("#playerMoreBtn")?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openPlayerControls()}); $("#nextBtn").onclick=(e)=>{e.preventDefault();e.stopPropagation();next()};const seekProgress=e=>{if(audio.duration){audio.currentTime=(+e.target.value/1000)*audio.duration;updateMediaSessionPosition();}};$("#progress").oninput=seekProgress;$("#progress").onchange=seekProgress;
- audio.addEventListener("play",()=>{try{if("mediaSession"in navigator)navigator.mediaSession.playbackState="playing"}catch{};const t=state.tracks.find(x=>x.id===state.currentId);setNativePlaybackStatus(t,true);renderPlayer();scheduleSave();pushDiscordPresence()});
+ audio.addEventListener("play",()=>{ensureAudioFx().then(()=>applyMobileAudioFx());try{if("mediaSession"in navigator)navigator.mediaSession.playbackState="playing"}catch{};const t=state.tracks.find(x=>x.id===state.currentId);setNativePlaybackStatus(t,true);renderPlayer();scheduleSave();pushDiscordPresence()});
  audio.addEventListener("pause",()=>{
   try{if("mediaSession"in navigator)navigator.mediaSession.playbackState="paused"}catch{};
   const t=state.tracks.find(x=>x.id===state.currentId);
