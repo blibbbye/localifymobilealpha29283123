@@ -1,0 +1,6 @@
+{
+  "appId":"com.blibbby.localio.mobile",
+  "appName":"Localio Mobile",
+  "webDir":"www",
+  "bundledWebRuntime":false
+}
