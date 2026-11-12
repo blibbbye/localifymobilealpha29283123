@@ -1,0 +1,13 @@
+{
+  "name":"Localio Mobile",
+  "short_name":"Localio",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#090b0e",
+  "theme_color":"#090b0e",
+  "orientation":"portrait",
+  "icons":[
+    {"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
