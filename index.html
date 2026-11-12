@@ -622,12 +622,42 @@ function bindProfileModal(){
  $("#profileRepeat")?.addEventListener("change",e=>{state.settings.repeat=e.target.value;scheduleSave()});
  $("[data-profile-art]").forEach(el=>{const t=state.tracks.find(x=>x.id===el.dataset.profileArt);if(t)coverFor(t).then(u=>{if(el.isConnected&&u)el.innerHTML='<img src="'+esc(u)+'" alt="">'}).catch(()=>{})});
 }
+
+const mobileThemes=[
+{id:"blue",name:"Blue",bg:"#090d13",panel:"#111923",panel2:"#192330",line:"#293747",text:"#e8f0f7",muted:"#91a2b4",a:"#5798d0",b:"#79c5df"},
+{id:"purple",name:"Purple",bg:"#100d14",panel:"#1a1520",panel2:"#241c2b",line:"#3b2d45",text:"#f0eaf4",muted:"#a99bb2",a:"#9270b8",b:"#c18bc7"},
+{id:"green",name:"Green",bg:"#0b120e",panel:"#131d17",panel2:"#1b2920",line:"#2b4032",text:"#e9f2eb",muted:"#99ad9d",a:"#659b75",b:"#a2c98b"},
+{id:"pink",name:"Pink",bg:"#140d12",panel:"#20151d",panel2:"#2b1c27",line:"#49303f",text:"#f5eaf0",muted:"#b49aa9",a:"#b66e91",b:"#dc9ab8"},
+{id:"red",name:"Red",bg:"#140d0e",panel:"#201516",panel2:"#2b1c1e",line:"#493033",text:"#f5eaea",muted:"#b69b9c",a:"#b96d72",b:"#df9a8e"},
+{id:"orange",name:"Orange",bg:"#15100b",panel:"#211910",panel2:"#2d2116",line:"#493724",text:"#f5eee5",muted:"#b6a48f",a:"#bb8655",b:"#dfb17b"},
+{id:"teal",name:"Teal",bg:"#091312",panel:"#111e1d",panel2:"#192a29",line:"#29403e",text:"#e7f2f0",muted:"#91aaa6",a:"#559b94",b:"#83c4b9"},
+{id:"grey",name:"Grey",bg:"#101113",panel:"#191b1e",panel2:"#222529",line:"#373b40",text:"#eff0f1",muted:"#a0a4aa",a:"#858d98",b:"#c0c6cd"}
+];
+function allMobileThemes(){return [...mobileThemes,...(Array.isArray(state.settings.customThemes)?state.settings.customThemes:[])];}
+function activeMobileTheme(){return allMobileThemes().find(x=>x.id===state.settings.theme)||mobileThemes[0];}
+function applyMobileTheme(){
+ const t=activeMobileTheme(),r=document.documentElement;
+ for(const [k,v] of Object.entries({"--bg":t.bg,"--panel":t.panel,"--panel2":t.panel2,"--line":t.line||t.border,"--text":t.text||"#eef3f7","--muted":t.muted||"#8995a3","--accent":t.a||"#7dd3fc"}))if(v)r.style.setProperty(k,v);
+ const main=$("#main");if(main){main.style.backgroundImage=t.image?'linear-gradient(rgba(8,10,13,.76),rgba(8,10,13,.82)),url('+JSON.stringify(t.image)+')':'';main.style.backgroundSize=t.image?'cover':'';main.style.backgroundPosition=t.image?'center':'';}
+}
+function mobileThemeMarkup(){
+ const built=mobileThemes.map(t=>'<button class="themeChoice '+(state.settings.theme===t.id?'active':'')+'" data-action="chooseMobileTheme" data-id="'+t.id+'"><span style="display:flex;gap:5px"><i style="background:'+t.a+';width:18px;height:18px;border-radius:50%"></i><i style="background:'+t.b+';width:18px;height:18px;border-radius:50%"></i></span><strong>'+t.name+'</strong></button>').join("");
+ const custom=(state.settings.customThemes||[]).map(t=>'<div class="customThemeTile"><button class="themeChoice '+(state.settings.theme===t.id?'active':'')+'" data-action="chooseMobileTheme" data-id="'+esc(t.id)+'"><span style="display:flex;gap:5px"><i style="background:'+esc(t.a||"#777")+';width:18px;height:18px;border-radius:50%"></i><i style="background:'+esc(t.b||t.a||"#aaa")+';width:18px;height:18px;border-radius:50%"></i></span><strong>'+esc(t.name||"Custom Theme")+'</strong></button><button class="circle" data-action="mobileThemeMenu" data-id="'+esc(t.id)+'">•••</button></div>').join("");
+ return '<div class="themeGrid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px">'+built+'</div><div class="sectionHead" style="margin-top:15px"><strong>Custom Themes</strong></div><div style="display:flex;gap:8px;margin:8px 0"><button class="btn" data-action="newMobileTheme">＋</button><button class="btn" data-action="importMobileTheme">⇧</button></div>'+(custom?'<div style="display:grid;gap:7px">'+custom+'</div>':'<div class="detailSub">Create a theme with + or import a theme file.</div>');
+}
+function openMobileThemeEditor(id){
+ const old=(state.settings.customThemes||[]).find(x=>x.id===id)||activeMobileTheme(),t={...old};
+ const fields=[["Background","bg"],["Panels","panel"],["Raised panels","panel2"],["Borders","line"],["Text","text"],["Muted text","muted"],["Accent 1","a"],["Accent 2","b"]];
+ openModal('<div class="modalHead"><h2>Edit custom theme</h2><button class="circle" data-action="closeModal">'+icon("close")+'</button></div><div class="form"><div class="field"><label>Name</label><input id="mobileThemeName" maxlength="32" value="'+esc(t.name||"My Theme")+'"></div>'+fields.map(([label,key])=>'<div class="field"><label>'+label+'</label><input type="color" id="mobileTheme_'+key+'" value="'+esc(/^#[0-9a-f]{6}$/i.test(t[key]||"")?t[key]:"#777777")+'"></div>').join("")+'<button class="btn primary" data-action="saveMobileTheme" data-id="'+esc(id||"")+'">Save theme</button></div>');
+ window.__mobileThemeDraft=t;
+}
 function openAccountSettings(){
- openModal('<div class="modalHead"><h2>Account settings</h2><button class="circle" data-action="closeModal">'+icon("close")+'</button></div><div class="form"><label class="profileSetting"><span>Volume</span><input id="accountVolume" type="range" min="0" max="1" step=".01" value="'+String(state.settings.volume??.9)+'"></label><label class="profileSetting"><span>Shuffle</span><select id="accountShuffle"><option value="off" '+(!state.settings.shuffle?"selected":"")+'>Off</option><option value="on" '+(state.settings.shuffle?"selected":"")+'>On</option></select></label><label class="profileSetting"><span>Repeat</span><select id="accountRepeat"><option value="off" '+(state.settings.repeat==="off"?"selected":"")+'>Off</option><option value="all" '+(state.settings.repeat==="all"?"selected":"")+'>All</option><option value="one" '+(state.settings.repeat==="one"?"selected":"")+'>One</option></select></label><button class="btn" data-action="storageInfo">'+icon("shield")+'Storage & safety</button><button class="btn" data-action="backupMeta">'+icon("download")+'Export metadata backup</button></div>');
+ openModal('<div class="modalHead"><h2>Account settings</h2><button class="circle" data-action="closeModal">'+icon("close")+'</button></div><div class="form"><label class="profileSetting"><span>Volume</span><input id="accountVolume" type="range" min="0" max="1" step=".01" value="'+String(state.settings.volume??.9)+'"></label><label class="profileSetting"><span>Shuffle</span><select id="accountShuffle"><option value="off" '+(!state.settings.shuffle?"selected":"")+'>Off</option><option value="on" '+(state.settings.shuffle?"selected":"")+'>On</option></select></label><label class="profileSetting"><span>Repeat</span><select id="accountRepeat"><option value="off" '+(state.settings.repeat==="off"?"selected":"")+'>Off</option><option value="all" '+(state.settings.repeat==="all"?"selected":"")+'>All</option><option value="one" '+(state.settings.repeat==="one"?"selected":"")+'>One</option></select></label><button class="btn" data-action="storageInfo">'+icon("shield")+'Storage & safety</button><button class="btn" data-action="backupMeta">'+icon("download")+'Export metadata backup</button><div class="sectionHead"><strong>Themes</strong></div>'+mobileThemeMarkup()+'</div>');
  $("#accountVolume").oninput=e=>{state.settings.volume=Number(e.target.value);audio.volume=state.settings.volume;scheduleSave();renderPlayer()};
  $("#accountShuffle").onchange=e=>{state.settings.shuffle=e.target.value==="on";scheduleSave()};
  $("#accountRepeat").onchange=e=>{state.settings.repeat=e.target.value;scheduleSave()};
 }
+
 function openProfile(){
  normalizeProfile();normalizeStats();
  const s=normalizeStats(),plays=Object.values(s.playCounts).reduce((n,x)=>n+(Number(x)||0),0);
@@ -1703,6 +1733,16 @@ function bindEvents(){
     return;
   }
   if(a==="closeModal"){closeModal();return}
+
+  if(a==="chooseMobileTheme"){state.settings.theme=id;applyMobileTheme();saveMeta(true).catch(()=>{});openAccountSettings();return}
+  if(a==="newMobileTheme"){const t={...activeMobileTheme(),id:"custom-"+uid(),name:"My Theme"};state.settings.customThemes=[...(state.settings.customThemes||[]),t];state.settings.theme=t.id;openMobileThemeEditor(t.id);return}
+  if(a==="mobileThemeMenu"){const t=(state.settings.customThemes||[]).find(x=>x.id===id);if(t)openModal('<div class="modalHead"><h2>'+esc(t.name)+'</h2><button class="circle" data-action="closeModal">'+icon("close")+'</button></div><div class="form"><button class="btn" data-action="editMobileTheme" data-id="'+esc(id)+'">Edit</button><button class="btn" data-action="exportMobileTheme" data-id="'+esc(id)+'">Export</button><button class="btn danger" data-action="removeMobileTheme" data-id="'+esc(id)+'">Remove</button></div>');return}
+  if(a==="editMobileTheme"){openMobileThemeEditor(id);return}
+  if(a==="saveMobileTheme"){const t=window.__mobileThemeDraft||{};t.name=$("#mobileThemeName").value.trim()||"Custom Theme";for(const k of ["bg","panel","panel2","line","text","muted","a","b"]){const v=$("#mobileTheme_"+k)?.value;if(v)t[k]=v;}if(!state.settings.customThemes)state.settings.customThemes=[];if(!state.settings.customThemes.some(x=>x.id===t.id))state.settings.customThemes.push(t);state.settings.theme=t.id;applyMobileTheme();await saveMeta(true);openAccountSettings();return}
+  if(a==="exportMobileTheme"){const t=(state.settings.customThemes||[]).find(x=>x.id===id);if(t)downloadBlob(new Blob([JSON.stringify({themes:[t]},null,2)],{type:"application/json"}),(t.name||"theme")+".json");return}
+  if(a==="removeMobileTheme"){if(confirm("Remove this custom theme?")){state.settings.customThemes=(state.settings.customThemes||[]).filter(x=>x.id!==id);if(state.settings.theme===id)state.settings.theme="blue";applyMobileTheme();await saveMeta(true);openAccountSettings()}return}
+  if(a==="importMobileTheme"){const input=document.createElement("input");input.type="file";input.accept=".json,application/json";input.onchange=async()=>{const file=input.files?.[0];if(!file)return;try{const data=JSON.parse(await file.text()),list=Array.isArray(data)?data:(data.themes||[data]),valid=list.filter(t=>t&&/^#[0-9a-f]{6}$/i.test(t.bg||"")&&/^#[0-9a-f]{6}$/i.test(t.panel||""));if(!valid.length)throw new Error("No valid themes found.");const added=valid.map(t=>({...t,id:"custom-"+uid(),name:String(t.name||"Imported Theme").slice(0,32)}));state.settings.customThemes=[...(state.settings.customThemes||[]),...added];state.settings.theme=added[0].id;applyMobileTheme();await saveMeta(true);openAccountSettings();toast("Themes imported.")}catch(err){toast(err.message||"Could not import theme.")}};input.click();return}
+
   if(a==="editProfile"){closeSheet();editProfile();return}
   if(a==="changeProfilePicture"){window.__editingProfilePicture=true;openFilePicker($("#imagePicker"));return}
   if(a==="chooseEditorCover"){window.__editingEntityCover=true;openFilePicker($("#imagePicker"));return}
@@ -1772,7 +1812,7 @@ function bindEvents(){
 async function boot(){
   busy=false;operationController=null;saveTimer=0;
   $("#busyShade").classList.remove("open");
-  try{bindEvents();render()}catch(e){console.error("initial UI bind",e)}
+  try{bindEvents();render()}catch(e){console.error("initial UI bind",e)}try{applyMobileTheme()}catch(e){console.warn("theme apply failed",e)}
   busyShow("Loading save","Loading your Localio library…");
   busyUpdate("Loading save","Opening local saved storage…",10);
   try{
