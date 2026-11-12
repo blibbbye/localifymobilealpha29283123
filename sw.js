@@ -1,4 +1,4 @@
-const CACHE="localio-mobile-v18-20261004-playback-fix";
+const CACHE="localify-mobile-v19-20261112-effects-themes";
 const CORE=["./","./index.html","./manifest.webmanifest","./icon.svg"];
 self.addEventListener("install",e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));
