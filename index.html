@@ -969,7 +969,7 @@ function renderLikedSongs(){
 }
 function moveMobileOrder(kind,id,direction){
  let arr=null,owner=null;
- if(kind==="album"||state.view==="folder"){owner=folderById(state.detail);if(owner){ensureFolderArrays(owner);arr=kind==="album"?owner.albumIds:owner.trackIds}}
+ if(kind==="album"||(state.view==="folder"&&typeof state.detail==="string")){owner=folderById(state.detail);if(owner){ensureFolderArrays(owner);arr=kind==="album"?owner.albumIds:owner.trackIds}}
  else if(state.detail?.type==="playlist"){owner=state.playlists.find(p=>p.id===state.detail.id);if(owner){owner.trackIds=Array.isArray(owner.trackIds)?owner.trackIds:[];arr=owner.trackIds}}
  else if(state.view==="liked")arr=state.liked;
  if(!arr)return;
@@ -1707,7 +1707,7 @@ function openCurrentLyrics(){
  const t=state.tracks.find(x=>x.id===state.currentId);
  if(!t){openModal('<div class="modalHead"><h2>Lyrics</h2><button class="circle" data-action="closeModal">'+icon("close")+'</button></div><div class="empty"><strong>Nothing playing</strong>Start a song to view its lyrics.</div>');return}
  const lyrics=String(t.lyrics||"").trim(),lines=parseMobileLrc(lyrics);
- const html=lyrics?lines.map(line=>'<div class="mobileLyricLine">'+(line.lineTime===null?'<span>'+line.tokens.map(x=>esc(x.word)).join("")+'</span>':'<button class="mobileLyricJump" data-action="seekLyric" data-id="'+esc(t.id)+'" data-time="'+line.lineTime+'">'+line.tokens.map(x=>x.time===null?esc(x.word):'<span>'+esc(x.word)+'</span>').join("")+'</button>')+'</div>').join(""):'<div class="empty"><strong>No lyrics added</strong>Edit the song to add lyrics.</div>';
+ const html=lyrics?lines.map(line=>'<div class="mobileLyricLine">'+line.tokens.map(x=>{const time=x.time===null?line.lineTime:x.time;return time===null?esc(x.word):'<button class="mobileLyricJump" data-action="seekLyric" data-id="'+esc(t.id)+'" data-time="'+time+'">'+esc(x.word)+'</button>'}).join("")+'</div>').join(""):'<div class="empty"><strong>No lyrics added</strong>Edit the song to add lyrics.</div>';
  openModal('<div class="modalHead"><h2>'+esc(trackTitle(t))+'</h2><button class="circle" data-action="closeModal">'+icon("close")+'</button></div><div class="lyricsMobile">'+html+'</div>');
 }
 function openPlayerControls(){
